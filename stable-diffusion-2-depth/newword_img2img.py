@@ -24,6 +24,30 @@ parser.add_argument(
     nargs="*",
     help='add new words'
 )
+parser.add_argument(
+    '--scale',
+    type=float,
+    default=7.5,
+    help='guidance_scale'
+)
+parser.add_argument(
+    '--strength',
+    type=float,
+    default=0.8,
+    help='strength'
+)
+parser.add_argument(
+    '--steps',
+    type=int,
+    default=50,
+    help='num_inference_steps'
+)
+parser.add_argument(
+    '--seed',
+    type=int,
+    default=10000,
+    help='seed'
+)
 opt = parser.parse_args()
 
 original_image = opt.image
@@ -77,8 +101,13 @@ if opt.newword:
         prompt_list.append(temp)
 else:
     prompt_list.append(prompt)
-    
-generator = torch.Generator(device="cuda").manual_seed(238)
+
+seed = opt.seed
+generator = torch.Generator(device="cuda").manual_seed(seed)
+
+scale = opt.scale
+strength = opt.strength
+steps = opt.steps
 
 for eachprompt in prompt_list:
     p = ','.join(eachprompt)
@@ -88,8 +117,8 @@ for eachprompt in prompt_list:
         negative_prompt = negative_prompt,
         image = init_image,
         generator = generator,
-        guidance_scale = 13.5,
-        strength = 0.8,
-        num_inference_steps = 50,
+        guidance_scale = scale,
+        strength = strength,
+        num_inference_steps = steps,
         num_images_per_prompt = 1).images[0]
-    image.save(os.path.join('results', f'{p}.png'))
+    image.save(os.path.join('results', f'strenth{strength}_scale{scale}_steps{steps}.png'))
