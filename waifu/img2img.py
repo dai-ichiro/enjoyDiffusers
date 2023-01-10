@@ -20,22 +20,23 @@ parser.add_argument(
 )
 parser.add_argument(
     '--scale',
-    nargs="*",
+    nargs='*',
     default=[7.5],    
     type=float,
     help='guidance_scale',
 )
 parser.add_argument(
     '--strength',
-    nargs="*",
+    nargs='*',
     default=[0.8],
     type=float,
     help='strength',
 )
 parser.add_argument(
     '--steps',
+    nargs='*',
+    default=[50],
     type=int,
-    default=50,
     help='num_inference_steps',
 )
 parser.add_argument(
@@ -105,21 +106,21 @@ now_str = now.strftime('%m%d_%H%M')
 
 scale_list = opt.scale
 strength_list = opt.strength
-
-steps = opt.steps
+steps_list = opt.steps
 
 for i in range(opt.n_samples):
+    seed  = opt.seed + i
     for scale in scale_list:
         for strength in strength_list:
-            seed  = opt.seed + i
-            generator = torch.Generator(device="cuda").manual_seed(seed)
-            image = pipe(
-                prompt = prompt,
-                negative_prompt = negative_prompt,
-                image = init_image,
-                generator = generator,
-                guidance_scale = scale,
-                strength = strength,
-                num_inference_steps = steps,
-                num_images_per_prompt = 1).images[0]
-            image.save(os.path.join('results', f'{now_str}_{scheduler}_seed{seed}_scale{scale}_strength{strength}_steps{steps}.png'))
+            for steps in steps_list:
+                generator = torch.Generator(device="cuda").manual_seed(seed)
+                image = pipe(
+                    prompt = prompt,
+                    negative_prompt = negative_prompt,
+                    image = init_image,
+                    generator = generator,
+                    guidance_scale = scale,
+                    strength = strength,
+                    num_inference_steps = steps,
+                    num_images_per_prompt = 1).images[0]
+                image.save(os.path.join('results', f'{now_str}_{scheduler}_seed{seed}_scale{scale}_strength{strength}_steps{steps}.png'))
