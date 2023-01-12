@@ -78,15 +78,20 @@ init_image = Image.open(original_image).convert("RGB").resize((512, 512))
 if os.path.isfile('prompt.txt'):
     print('reading prompts from prompt.txt')
     with open('prompt.txt', 'r') as f:
-        prompt = f.read().splitlines()
+        #prompt = f.read().splitlines()
+        prompt = f.readlines()
+        prompt = [x.strip() for x in prompt]
         prompt = ','.join(prompt)
 else:
-    prompt = 'anime of tsundere moe kawaii beautiful girl'
+    print('Unable to find prompt.txt')
+    sys.exit()
 
 if opt.negative_prompt and os.path.isfile('negative_prompt.txt'):
     print('reading negative prompts from negative_prompt.txt')
     with open('negative_prompt.txt', 'r') as f:
-        negative_prompt = f.read().splitlines()
+        #negative_prompt = f.read().splitlines()
+        negative_prompt = f.readlines()
+        negative_prompt = [x.strip() for x in negative_prompt]
         negative_prompt = ','.join(negative_prompt)
 else:
     negative_prompt = None
