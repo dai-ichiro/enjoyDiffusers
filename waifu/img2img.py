@@ -1,4 +1,6 @@
 import os
+import sys
+import glob
 import argparse
 import datetime
 import torch
@@ -57,6 +59,19 @@ parser.add_argument(
 )
 opt = parser.parse_args()
 
+globresult = glob.glob('*')
+dirlist =[]
+for file_or_dir in globresult:
+    if os.path.isdir(file_or_dir) and file_or_dir != 'results':
+        dirlist.append(file_or_dir)
+
+if len(dirlist) == 1:
+    model_id = dirlist[0]
+    print(f'model id: {model_id}')
+else:
+    print('Unable to identify model')
+    sys.exit()
+
 original_image = opt.image
 init_image = Image.open(original_image).convert("RGB").resize((512, 512))
 
@@ -78,8 +93,6 @@ else:
 
 print(f'prompt: {prompt}')
 print(f'negative prompt: {negative_prompt}')
-
-model_id = "./waifu-diffusion"
 
 pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id, torch_dtype=torch.float32)
 scheduler = opt.scheduler
