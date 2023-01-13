@@ -18,6 +18,12 @@ parser.add_argument(
     type=str,
     help='mask image'
 )
+parser.add_argument(
+    '--n_samples',
+    type=int,
+    default=1,
+    help='how many samples to produce for each given prompt',
+)
 opt = parser.parse_args()
 
 globresult = glob.glob('*')
@@ -58,11 +64,12 @@ negatvie_prompt = 'poor quality, bad quality'
 
 os.makedirs('results', exist_ok=True)
 
-image = pipe(
-    prompt=prompt,
-    negative_prompt = negatvie_prompt,
-    image=init_image,
-    mask_image=mask_image,
-    num_inference_steps=50).images[0]
+for i in range(opt.n_samples):
+    image = pipe(
+        prompt=prompt,
+        negative_prompt = negatvie_prompt,
+        image=init_image,
+        mask_image=mask_image,
+        num_inference_steps=50).images[0]
 
-image.save(os.path.join('results', 'result.png'))
+    image.save(os.path.join('results', f'result_{i+1}.png'))
