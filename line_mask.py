@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 
@@ -16,8 +17,10 @@ parser.add_argument(
 )
 
 opt = parser.parse_args()
-img_path = opt.image
 size = opt.size
+
+img_path = opt.image
+img_fname_no_ext = os.path.splitext(os.path.basename(img_path))[0]
 
 drawing = False 
 
@@ -54,5 +57,5 @@ while True:
         break
     cv2.imshow('image',original_image)
 
-cv2.imwrite('mask.png', mask_image)
+cv2.imwrite(f'{img_fname_no_ext}_mask.png', mask_image)
 cv2.destroyAllWindows()

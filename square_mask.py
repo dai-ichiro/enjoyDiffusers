@@ -1,14 +1,16 @@
+import os
 import cv2
 import numpy as np
 
 from argparse import ArgumentParser
 parser = ArgumentParser()
 parser.add_argument('--image', type=str, help='original image' )
-args = parser.parse_args()
+opt = parser.parse_args()
 
-original_image = args.image
+img_path = opt.image
+img_fname_no_ext = os.path.splitext(os.path.basename(img_path))[0]
 
-img = cv2.imread(original_image)
+img = cv2.imread(img_path)
 
 source_window = "make_mask"
 cv2.namedWindow(source_window)
@@ -22,5 +24,5 @@ maskimg = np.zeros(img.shape)
 
 cv2.rectangle(maskimg, (xmin, ymin), (xmin+width, ymin+height), (255,255,255), -1)
 
-cv2.imwrite('mask.png', maskimg)
+cv2.imwrite(f'{img_fname_no_ext}_mask.png', maskimg)
 
