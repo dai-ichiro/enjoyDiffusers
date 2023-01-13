@@ -59,7 +59,7 @@ pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
 pipe = pipe.to("cuda")
 pipe.enable_attention_slicing()
 
-prompt = 'good quality, best quality'
+prompt = 'good quality, best quality, high quality'
 negatvie_prompt = 'poor quality, bad quality'
 
 os.makedirs('results', exist_ok=True)
