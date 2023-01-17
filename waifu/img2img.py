@@ -80,7 +80,8 @@ if os.path.isfile('prompt.txt'):
     with open('prompt.txt', 'r') as f:
         #prompt = f.read().splitlines()
         prompt = f.readlines()
-        prompt = [x.strip() for x in prompt]
+        #prompt = [x.strip() for x in prompt]
+        prompt = [x.strip() for x in prompt if x.strip() != '']
         prompt = ','.join(prompt)
 else:
     print('Unable to find prompt.txt')
@@ -91,7 +92,8 @@ if opt.negative_prompt and os.path.isfile('negative_prompt.txt'):
     with open('negative_prompt.txt', 'r') as f:
         #negative_prompt = f.read().splitlines()
         negative_prompt = f.readlines()
-        negative_prompt = [x.strip() for x in negative_prompt]
+        #negative_prompt = [x.strip() for x in negative_prompt]
+        negative_prompt = [x.strip() for x in negative_prompt if x.strip() != '']
         negative_prompt = ','.join(negative_prompt)
 else:
     negative_prompt = None
