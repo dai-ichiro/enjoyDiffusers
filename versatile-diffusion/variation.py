@@ -36,7 +36,7 @@ init_image = Image.open(original_image).convert("RGB").resize((512, 512))
 pipe = VersatileDiffusionImageVariationPipeline.from_pretrained(
     "versatile-diffusion", torch_dtype=torch.float32
 )
-pipe = pipe.to("cuda")
+pipe.to("cuda")
 
 os.makedirs('results', exist_ok=True)
 
