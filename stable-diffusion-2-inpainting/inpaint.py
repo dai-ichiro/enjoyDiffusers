@@ -56,7 +56,7 @@ mask_image = Image.open(mask_fname).convert('RGB').resize((512, 512))
 pipe = DiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float32)
 
 pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
-pipe = pipe.to("cuda")
+pipe.to("cuda")
 pipe.enable_attention_slicing()
 
 prompt = 'good quality, best quality, high quality'
