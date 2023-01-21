@@ -101,7 +101,10 @@ else:
 print(f'prompt: {prompt}')
 print(f'negative prompt: {negative_prompt}')
 
-pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id, torch_dtype=torch.float32)
+pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
+    model_id, 
+    torch_dtype=torch.float32,
+    safety_checker=None)
 scheduler = opt.scheduler
 match scheduler:
     case 'pmdn':
@@ -117,10 +120,12 @@ match scheduler:
         None
 pipe.to("cuda")
 
+'''
 def null_safety(images, **kwargs):
     return images, False
  
 pipe.safety_checker = null_safety
+'''
 
 os.makedirs('results', exist_ok=True)
 
