@@ -115,7 +115,7 @@ match scheduler:
         pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
     case _:
         None
-pipe = pipe.to("cuda")
+pipe.to("cuda")
 
 def null_safety(images, **kwargs):
     return images, False
