@@ -79,7 +79,7 @@ print(f'negative prompt: {negative_prompt}')
 model_id = "./stable-diffusion-2-1-base"
 
 pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
-pipe = pipe.to("cuda")
+pipe.to("cuda")
 #pipe.enable_attention_slicing()
 
 
