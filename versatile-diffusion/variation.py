@@ -45,7 +45,7 @@ scale_list = opt.scale
 for i in range(opt.n_samples):
     seed = opt.seed + i
     for scale in scale_list:
-        generator = torch.Generator(device="cuda").manual_seed(seed)
+        generator = torch.manual_seed(seed)
         image = pipe(
             image = init_image,
             guidance_scale = scale,
