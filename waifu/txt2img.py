@@ -95,7 +95,7 @@ steps = opt.steps
 for i in range(opt.n_samples):
     for scale in scale_list:
         seed  = opt.seed + i
-        generator = torch.Generator(device="cuda").manual_seed(seed)
+        generator = torch.manual_seed(seed)
         image = pipe(
             prompt = prompt,
             negative_prompt = negative_prompt,
