@@ -103,7 +103,7 @@ else:
     prompt_list.append(prompt)
 
 seed = opt.seed
-generator = torch.Generator(device="cuda").manual_seed(seed)
+generator = torch.manual_seed(seed)
 
 scale = opt.scale
 strength = opt.strength

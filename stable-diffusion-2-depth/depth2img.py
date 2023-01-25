@@ -125,7 +125,7 @@ for i in range(opt.n_samples):
     for scale in scale_list:
         for strength in strength_list:
             for steps in steps_list:
-                generator = torch.Generator(device="cuda").manual_seed(seed)
+                generator = torch.manual_seed(seed)
                 image = pipe(
                     prompt = prompt,
                     negative_prompt = negative_prompt,
