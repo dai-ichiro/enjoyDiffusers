@@ -24,6 +24,11 @@ parser.add_argument(
     '--vertical',
     action='store_true',
     help='vertical')
+parser.add_argument(
+    '--jpg',
+    action='store_true',
+    help='if true, use jpeg format')
+
 args = parser.parse_args()
 
 image_list =[Image.open(x) for x in args.list]
@@ -40,4 +45,8 @@ else:
     one_array = np.hstack(tuple(array_list))
     
 pil_image = Image.fromarray(one_array)
-pil_image.save('stackimage.png')
+
+if args.jpg:
+    pil_image.save('stackimage.jpg')
+else:
+    pil_image.save('stackimage.png')
