@@ -47,5 +47,7 @@ for i in range(4):
         num_inference_steps = 50,
         generator = generator,
         num_images_per_prompt = 1,
+        width = opt.width,
+        height = opt.height
         ).images[0]
     image.save(f'{model_id}_{new_seed}.png')
