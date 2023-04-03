@@ -1,5 +1,6 @@
+# Text2video-zero with controlnet
 
-# How to use
+## How to use
 
 ~~~
 python canny_video2video.py ^
