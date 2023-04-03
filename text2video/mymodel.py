@@ -38,11 +38,10 @@ class Model:
             unet_chunk_size=2)
 
         self.pipe = None
-        self.model_type = None
 
         self.states = {}
 
-    def set_model(self, model_type: ModelType, model_id: str, **kwargs):
+    def set_model(self, model_id: str, **kwargs):
         if self.pipe is not None:
             del self.pipe
         torch.cuda.empty_cache()
@@ -50,7 +49,6 @@ class Model:
         safety_checker = kwargs.pop('safety_checker', None)
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
             model_id, safety_checker=safety_checker, **kwargs).to(self.device).to(self.dtype)
-        self.model_type = model_type
 
     def inference_chunk(self, frame_ids, **kwargs):
         if self.pipe is None:
@@ -65,8 +63,6 @@ class Model:
             kwargs['image'] = kwargs['image'][frame_ids]
         if 'video_length' in kwargs:
             kwargs['video_length'] = len(frame_ids)
-        if self.model_type == ModelType.Text2Video:
-            kwargs["frame_ids"] = frame_ids
         return self.pipe(prompt=prompt[frame_ids].tolist(),
                          negative_prompt=negative_prompt[frame_ids].tolist(),
                          latents=latents,
@@ -129,19 +125,17 @@ class Model:
                                  resolution=512,
                                  use_cf_attn=True,
                                  save_path=None):
-        video_path = gradio_utils.edge_path_to_video_path(video_path)
-        if self.model_type != ModelType.ControlNetCanny:
-            controlnet = ControlNetModel.from_pretrained(
-                "controlnet/sd-controlnet-canny")
-            self.set_model(ModelType.ControlNetCanny,
-                           model_id="local_model/anything-v4.0", controlnet=controlnet)
-            self.pipe.scheduler = DDIMScheduler.from_config(
-                self.pipe.scheduler.config)
-            if use_cf_attn:
-                self.pipe.unet.set_attn_processor(
-                    processor=self.controlnet_attn_proc)
-                self.pipe.controlnet.set_attn_processor(
-                    processor=self.controlnet_attn_proc)
+
+        controlnet = ControlNetModel.from_pretrained(
+            "controlnet/sd-controlnet-canny")
+        self.set_model(model_id="local_model/anything-v4.0", controlnet=controlnet)
+        self.pipe.scheduler = DDIMScheduler.from_config(
+            self.pipe.scheduler.config)
+        if use_cf_attn:
+            self.pipe.unet.set_attn_processor(
+                processor=self.controlnet_attn_proc)
+            self.pipe.controlnet.set_attn_processor(
+                processor=self.controlnet_attn_proc)
 
         added_prompt = 'best quality, extremely detailed'
         negative_prompts = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
