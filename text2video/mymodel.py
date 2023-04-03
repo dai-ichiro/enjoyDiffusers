@@ -1,12 +1,8 @@
-from enum import Enum
-import gc
 import numpy as np
-
 import torch
 
-from diffusers import StableDiffusionInstructPix2PixPipeline, StableDiffusionControlNetPipeline, ControlNetModel, UNet2DConditionModel
+from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, UNet2DConditionModel
 from diffusers.schedulers import EulerAncestralDiscreteScheduler, DDIMScheduler
-from text_to_video_pipeline import TextToVideoPipeline
 
 import utils
 import gradio_utils
@@ -22,15 +18,17 @@ class Model:
         self.controlnet_attn_proc = utils.CrossFrameAttnProcessor(
             unet_chunk_size=2)
 
-        self.pipe = None
+        #self.pipe = None
 
-        self.states = {}
+        #self.states = {}
 
     def set_model(self, model_id: str, **kwargs):
+        '''
         if self.pipe is not None:
             del self.pipe
         torch.cuda.empty_cache()
         gc.collect()
+        '''
         safety_checker = kwargs.pop('safety_checker', None)
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
             model_id, safety_checker=safety_checker, **kwargs).to(self.device).to(self.dtype)
