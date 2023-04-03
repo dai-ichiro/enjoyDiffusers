@@ -5,23 +5,25 @@ from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, UNet2D
 from diffusers.schedulers import EulerAncestralDiscreteScheduler, DDIMScheduler
 
 import utils
-import gradio_utils
 import os
 on_huggingspace = os.environ.get("SPACE_AUTHOR_NAME") == "PAIR"
 
 
 class Model:
-    def __init__(self, device, dtype, **kwargs):
-        self.device = device
-        self.dtype = dtype
-        self.generator = torch.Generator(device=device)
+    def __init__(self, **kwargs):
+        self.device = 'cuda'
+        self.dtype = torch.float16
+        self.generator = torch.Generator('cuda')
         self.controlnet_attn_proc = utils.CrossFrameAttnProcessor(
             unet_chunk_size=2)
 
     def set_model(self, model_id: str, **kwargs):
-        safety_checker = kwargs.pop('safety_checker', None)
+        #safety_checker = kwargs.pop('safety_checker', None)
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            model_id, safety_checker=safety_checker, **kwargs).to(self.device).to(self.dtype)
+            model_id, 
+            safety_checker=None,
+            dtype = self.dtype,
+            **kwargs).to(self.device)
 
     def inference_chunk(self, frame_ids, **kwargs):
         if self.pipe is None:
