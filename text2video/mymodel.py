@@ -18,17 +18,7 @@ class Model:
         self.controlnet_attn_proc = utils.CrossFrameAttnProcessor(
             unet_chunk_size=2)
 
-        #self.pipe = None
-
-        #self.states = {}
-
     def set_model(self, model_id: str, **kwargs):
-        '''
-        if self.pipe is not None:
-            del self.pipe
-        torch.cuda.empty_cache()
-        gc.collect()
-        '''
         safety_checker = kwargs.pop('safety_checker', None)
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
             model_id, safety_checker=safety_checker, **kwargs).to(self.device).to(self.dtype)
@@ -97,7 +87,6 @@ class Model:
                                  video_path,
                                  prompt,
                                  chunk_size=8,
-                                 watermark='Picsart AI Research',
                                  num_inference_steps=20,
                                  controlnet_conditioning_scale=1.0,
                                  guidance_scale=9.0,
@@ -147,4 +136,4 @@ class Model:
                                 split_to_chunks=True,
                                 chunk_size=chunk_size,
                                 )
-        return utils.create_video(result, fps, path=save_path, watermark=gradio_utils.logo_name_to_path(watermark))
+        return utils.create_video(result, fps, path=save_path, watermark=None)
