@@ -4,7 +4,7 @@ import torch
 from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, UNet2DConditionModel
 from diffusers.schedulers import EulerAncestralDiscreteScheduler, DDIMScheduler
 
-import utils
+import myutils
 import os
 on_huggingspace = os.environ.get("SPACE_AUTHOR_NAME") == "PAIR"
 
@@ -14,16 +14,6 @@ class Model:
         self.device = 'cuda'
         self.dtype = torch.float16
         self.generator = torch.Generator('cuda')
-        self.controlnet_attn_proc = utils.CrossFrameAttnProcessor(
-            unet_chunk_size=2)
-
-    def set_model(self, model_id: str, **kwargs):
-        #safety_checker = kwargs.pop('safety_checker', None)
-        self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            model_id, 
-            safety_checker=None,
-            dtype = self.dtype,
-            **kwargs).to(self.device)
 
     def inference_chunk(self, frame_ids, **kwargs):
         if self.pipe is None:
@@ -97,26 +87,29 @@ class Model:
                                  low_threshold=100,
                                  high_threshold=200,
                                  resolution=512,
-                                 use_cf_attn=True,
                                  save_path=None):
 
-        controlnet = ControlNetModel.from_pretrained(
-            "controlnet/sd-controlnet-canny")
-        self.set_model(model_id="local_model/anything-v4.0", controlnet=controlnet)
-        self.pipe.scheduler = DDIMScheduler.from_config(
-            self.pipe.scheduler.config)
-        if use_cf_attn:
-            self.pipe.unet.set_attn_processor(
-                processor=self.controlnet_attn_proc)
-            self.pipe.controlnet.set_attn_processor(
-                processor=self.controlnet_attn_proc)
+        controlnet = ControlNetModel.from_pretrained("controlnet/sd-controlnet-canny", torch_dtype=torch.float16).to('cuda')
+        
+        self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
+            "local_model/anything-v4.0", 
+            safety_checker=None,
+            torch_dtype = torch.float16,
+            controlnet=controlnet).to(self.device)
+        
+        #self.set_model(model_id="local_model/anything-v4.0", controlnet=controlnet)
+        self.pipe.scheduler = DDIMScheduler.from_config(self.pipe.scheduler.config)
+
+        controlnet_attn_proc = myutils.CrossFrameAttnProcessor(unet_chunk_size=2)
+        self.pipe.unet.set_attn_processor(processor=controlnet_attn_proc)
+        self.pipe.controlnet.set_attn_processor(processor=controlnet_attn_proc)
 
         added_prompt = 'best quality, extremely detailed'
         negative_prompts = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-        video, fps = utils.prepare_video(
+        video, fps = myutils.prepare_video(
             video_path, resolution, self.device, self.dtype, False)
-        control = utils.pre_process_canny(
+        control = myutils.pre_process_canny(
             video, low_threshold, high_threshold).to(self.device).to(self.dtype)
         f, _, h, w = video.shape
         self.generator.manual_seed(seed)
@@ -138,4 +131,4 @@ class Model:
                                 split_to_chunks=True,
                                 chunk_size=chunk_size,
                                 )
-        return utils.create_video(result, fps, path=save_path, watermark=None)
+        return myutils.create_video(result, fps, path=save_path)

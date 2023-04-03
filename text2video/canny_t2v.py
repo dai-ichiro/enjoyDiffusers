@@ -1,4 +1,3 @@
-import torch
 from mymodel import Model
 
 model = Model()
