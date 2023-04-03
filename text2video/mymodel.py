@@ -1,13 +1,10 @@
 import numpy as np
 import torch
 
-from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, UNet2DConditionModel
+from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, AutoencoderKL
 from diffusers.schedulers import EulerAncestralDiscreteScheduler, DDIMScheduler
 
 import myutils
-import os
-on_huggingspace = os.environ.get("SPACE_AUTHOR_NAME") == "PAIR"
-
 
 class Model:
     def __init__(self, **kwargs):
@@ -16,8 +13,6 @@ class Model:
         self.generator = torch.Generator('cuda')
 
     def inference_chunk(self, frame_ids, **kwargs):
-        if self.pipe is None:
-            return
 
         prompt = np.array(kwargs.pop('prompt'))
         negative_prompt = np.array(kwargs.pop('negative_prompt', ''))
@@ -34,9 +29,8 @@ class Model:
                          generator=self.generator,
                          **kwargs)
 
-    def inference(self, split_to_chunks=False, chunk_size=8, **kwargs):
-        if self.pipe is None:
-            return
+    def inference(self, chunk_size=8, **kwargs):
+
         seed = kwargs.pop('seed', 0)
         if seed < 0:
             seed = self.generator.seed()
@@ -54,26 +48,23 @@ class Model:
         frames_counter = 0
 
         # Processing chunk-by-chunk
-        if split_to_chunks:
-            chunk_ids = np.arange(0, f, chunk_size - 1)
-            result = []
-            for i in range(len(chunk_ids)):
-                ch_start = chunk_ids[i]
-                ch_end = f if i == len(chunk_ids) - 1 else chunk_ids[i + 1]
-                frame_ids = [0] + list(range(ch_start, ch_end))
-                self.generator.manual_seed(seed)
-                print(f'Processing chunk {i + 1} / {len(chunk_ids)}')
-                result.append(self.inference_chunk(frame_ids=frame_ids,
-                                                   prompt=prompt,
-                                                   negative_prompt=negative_prompt,
-                                                   **kwargs).images[1:])
-                frames_counter += len(chunk_ids)-1
-                if on_huggingspace and frames_counter >= 80:
-                    break
-            result = np.concatenate(result)
-            return result
-        else:
-            return self.pipe(prompt=prompt, negative_prompt=negative_prompt, generator=self.generator, **kwargs).images
+        chunk_ids = np.arange(0, f, chunk_size - 1)
+        result = []
+        for i in range(len(chunk_ids)):
+            ch_start = chunk_ids[i]
+            ch_end = f if i == len(chunk_ids) - 1 else chunk_ids[i + 1]
+            frame_ids = [0] + list(range(ch_start, ch_end))
+            self.generator.manual_seed(seed)
+            print(f'Processing chunk {i + 1} / {len(chunk_ids)}')
+            result.append(self.inference_chunk(frame_ids=frame_ids,
+                                                prompt=prompt,
+                                                negative_prompt=negative_prompt,
+                                                **kwargs).images[1:])
+            frames_counter += len(chunk_ids)-1
+
+        result = np.concatenate(result)
+        return result
+
 
     def process_controlnet_canny(self,
                                  video_path,
@@ -89,20 +80,22 @@ class Model:
                                  resolution=512,
                                  save_path=None):
 
+        vae = AutoencoderKL.from_pretrained("vae/anime2_vae", torch_dtype=torch.float16).to('cuda')
+        
         controlnet = ControlNetModel.from_pretrained("controlnet/sd-controlnet-canny", torch_dtype=torch.float16).to('cuda')
         
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            "local_model/anything-v4.0", 
+            "local_model/anything-v4.0",
+            controlnet=controlnet,
+            vae = vae, 
             safety_checker=None,
-            torch_dtype = torch.float16,
-            controlnet=controlnet).to(self.device)
-        
-        #self.set_model(model_id="local_model/anything-v4.0", controlnet=controlnet)
-        self.pipe.scheduler = DDIMScheduler.from_config(self.pipe.scheduler.config)
+            torch_dtype = torch.float16).to(self.device)
 
         controlnet_attn_proc = myutils.CrossFrameAttnProcessor(unet_chunk_size=2)
         self.pipe.unet.set_attn_processor(processor=controlnet_attn_proc)
         self.pipe.controlnet.set_attn_processor(processor=controlnet_attn_proc)
+
+        self.pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(self.pipe.scheduler.config)
 
         added_prompt = 'best quality, extremely detailed'
         negative_prompts = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
@@ -128,7 +121,6 @@ class Model:
                                 latents=latents,
                                 seed=seed,
                                 output_type='numpy',
-                                split_to_chunks=True,
                                 chunk_size=chunk_size,
                                 )
         return myutils.create_video(result, fps, path=save_path)
