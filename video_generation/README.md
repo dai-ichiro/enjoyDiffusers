@@ -31,3 +31,5 @@ python canny_video2video.py ^
 ## Link to my blog
 
 https://touch-sp.hatenablog.com/entry/2023/04/01/225144
+
+https://touch-sp.hatenablog.com/entry/2023/04/04/172709
