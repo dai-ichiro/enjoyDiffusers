@@ -7,6 +7,12 @@ pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url http
 pip install -r https://raw.githubusercontent.com/Picsart-AI-Research/Text2Video-Zero/main/requirements.txt
 ~~~
 
+### option (When use pose2image ControlNet)
+
+~~~
+pip install controlnet-aux
+~~~
+
 ## How to use
 
 ~~~
