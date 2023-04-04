@@ -11,6 +11,6 @@ python canny_video2video.py ^
   --low_threshold 50 ^
   --high_threshold 50 ^
   --prompt prompt.txt ^
-  --seed 42
+  --seed 42 ^
   --steps 30
 ~~~
