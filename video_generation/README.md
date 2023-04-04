@@ -7,7 +7,7 @@ python canny_video2video.py ^
   --video run.mp4 ^
   --model model/anything-v4.0 ^
   --vae vae/anime2_vae ^
-  --sheduler eulera ^
+  --scheduler eulera ^
   --low_threshold 50 ^
   --high_threshold 50 ^
   --prompt prompt.txt ^
