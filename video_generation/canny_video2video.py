@@ -188,21 +188,21 @@ if __name__ == "__main__":
         help='save path'
     )
     parser.add_argument(
-    '--model',
-    type=str,
-    required=True,
-    help='model',
+        '--model',
+        type=str,
+        required=True,
+        help='model',
     )   
     parser.add_argument(
-    '--vae',
-    type=str,
-    help='vae'
+        '--vae',
+        type=str,
+        help='vae'
     )
     parser.add_argument(
-    '--scheduler',
-    type=str,
-    default='pndm',
-    choices=['pndm', 'multistepdpm', 'eulera']
+        '--scheduler',
+        type=str,
+        default='pndm',
+        choices=['pndm', 'multistepdpm', 'eulera']
     )
     parser.add_argument(
         '--low_threshold',
@@ -229,21 +229,21 @@ if __name__ == "__main__":
         help='seed'
     )
     parser.add_argument(
-    '--prompt',
-    type=str,
-    help='prompt'
+        '--prompt',
+        type=str,
+        help='prompt'
     )
     parser.add_argument(
-    '--conditioning_scale',
-    type=float,
-    default=1.0,
-    help='conditioning_scale'
+        '--conditioning_scale',
+        type=float,
+        default=1.0,
+        help='conditioning_scale'
     )
     parser.add_argument(
-    '--guidance_scale',
-    type=float,
-    default=9.0,
-    help='guidance_scale'
+        '--guidance_scale',
+        type=float,
+        default=9.0,
+        help='guidance_scale'
     )
     args = parser.parse_args()
 
