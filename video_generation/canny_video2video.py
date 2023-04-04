@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import torch
 import cv2
@@ -5,7 +6,6 @@ import decord
 from einops import rearrange
 
 from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, AutoencoderKL
-from diffusers.schedulers import EulerAncestralDiscreteScheduler, DDIMScheduler
 
 from argparse import ArgumentParser
 
@@ -58,24 +58,29 @@ class CrossFrameAttnProcessor:
 
         return hidden_states
 
-def main(
-    video_path,
-    prompt,
-    save_path,                            
-    num_inference_steps=20,
-    controlnet_conditioning_scale=1.0,
-    guidance_scale=9.0,
-    seed=42,
-    eta=0.0,
-    low_threshold=100,
-    high_threshold=200):
+def main(args):
+    video_path = args.video
+    save_path = args.save_path
+    model_id = args.model
+    vae_folder = args.vae
+    scheduler = args.scheduler
+    low_threshold= args.low_threshold
+    high_threshold = args.high_threshold
+    seed = args.seed
+    num_inference_steps = args.steps
+    controlnet_conditioning_scale=1.0
+    guidance_scale=9.0
+    eta=0.0
 
-    vae = AutoencoderKL.from_pretrained('vae/anime2_vae', torch_dtype=torch.float16).to('cuda')
+    if vae_folder is not None:
+        vae = AutoencoderKL.from_pretrained('vae/anime2_vae', torch_dtype=torch.float16).to('cuda')
+    else:
+        vae = AutoencoderKL.from_pretrained(model_id, subfolder='vae', torch_dtype=torch.float16).to('cuda')
     
     controlnet = ControlNetModel.from_pretrained('controlnet/sd-controlnet-canny', torch_dtype=torch.float16).to('cuda')
     
     pipe = StableDiffusionControlNetPipeline.from_pretrained(
-        'local_model/anything-v4.0',
+        model_id,
         controlnet=controlnet,
         vae = vae, 
         safety_checker=None,
@@ -85,11 +90,19 @@ def main(
     pipe.unet.set_attn_processor(processor=controlnet_attn_proc)
     pipe.controlnet.set_attn_processor(processor=controlnet_attn_proc)
 
-    pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
+    match scheduler:
+        case 'pmdn':
+            from diffusers import  PNDMScheduler
+            pipe.scheduler = PNDMScheduler.from_config(pipe.scheduler.config)
+        case 'multistepdpm':
+            from diffusers import DPMSolverMultistepScheduler
+            pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
+        case 'eulera':
+            from diffusers import EulerAncestralDiscreteScheduler
+            pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
+        case _:
+            None
 
-    added_prompt = 'best quality, extremely detailed'
-    negative_prompts = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
-    
     ## read video
     vr = decord.VideoReader(video_path)
     fps = int(vr.get_avg_fps())
@@ -105,21 +118,30 @@ def main(
     control = torch.from_numpy(detected_maps.copy()).float() / 255.0
     control = rearrange(control, 'f h w c -> f c h w')
 
-    f, h, w, _ = video.shape
+    frames_count, h, w, _ = video.shape
     generator = torch.Generator('cuda').manual_seed(seed)
     latents = torch.randn((1, 4, h//8, w//8), dtype=torch.float16, device='cuda', generator=generator)
     
-    seed = seed
-    prompt='a beautiful girl running'
-    prompt = prompt + ', ' + added_prompt
-    negative_prompt=negative_prompts
+    if args.prompt is not None and os.path.isfile(args.prompt):
+        print(f'reading prompts from {args.prompt}')
+        with open(args.prompt, 'r') as f:
+            prompt_from_file = f.readlines()
+            prompt_from_file = [x.strip() for x in prompt_from_file if x.strip() != '']
+            prompt_from_file = ', '.join(prompt_from_file)
+            prompt = f'{prompt_from_file}, best quality, extremely detailed'
+    else:
+        prompt = 'best quality, extremely detailed'
+    
+    negative_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
+    print(f'prompt: {prompt}')
+    print(f'negative prompt: {negative_prompt}')
 
     result = []
     latents = latents.repeat(2, 1, 1, 1)
     prompt = [prompt] * 2
     negative_prompt = [negative_prompt] *2
-    for i in range(f):
-        print(f'{i+1}/{f}')
+    for i in range(frames_count):
+        print(f'{i+1}/{frames_count}')
         frame_ids = [0] + [i]
         
         image = control[frame_ids]
@@ -166,25 +188,53 @@ if __name__ == "__main__":
         help='save path'
     )
     parser.add_argument(
+    '--model',
+    type=str,
+    required=True,
+    help='model',
+    )   
+    parser.add_argument(
+    '--vae',
+    type=str,
+    help='vae'
+    )
+    parser.add_argument(
+    '--scheduler',
+    type=str,
+    default='pndm',
+    choices=['pndm', 'multistepdpm', 'eulera']
+    )
+    parser.add_argument(
         '--low_threshold',
         type=int,
-        default=50,
+        default=100,
         help='low_threshold'
     )
     parser.add_argument(
         '--high_threshold',
         type=int,
-        default=50,
+        default=200,
         help='high_threshold'
+    )
+    parser.add_argument(
+        '--steps',
+        type=int,
+        default=20,
+        help='num_inference_steps'
+    )
+    parser.add_argument(
+        '--seed',
+        type=int,
+        default=42,
+        help='seed'
+    )
+    parser.add_argument(
+    '--prompt',
+    type=str,
+    help='prompt'
     )
     args = parser.parse_args()
 
-    main(
-        prompt='a beautiful girl running',
-        video_path = args.video,
-        low_threshold = args.low_threshold,
-        high_threshold = args.high_threshold,
-        save_path = args.save_path
-    )
+    main(args)
 
 
