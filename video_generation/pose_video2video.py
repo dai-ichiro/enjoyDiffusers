@@ -184,7 +184,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         '--save_path',
-        default='canny_result.mp4',
+        default='pose_result.mp4',
         type=str,
         help='save path'
     )
