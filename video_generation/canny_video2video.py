@@ -68,8 +68,8 @@ def main(args):
     high_threshold = args.high_threshold
     seed = args.seed
     num_inference_steps = args.steps
-    controlnet_conditioning_scale=1.0
-    guidance_scale=9.0
+    controlnet_conditioning_scale = args.conditioning_scale
+    guidance_scale = args.guidance_scale
     eta=0.0
 
     if vae_folder is not None:
@@ -232,6 +232,18 @@ if __name__ == "__main__":
     '--prompt',
     type=str,
     help='prompt'
+    )
+    parser.add_argument(
+    '--conditioning_scale',
+    type=float,
+    default=1.0,
+    help='conditioning_scale'
+    )
+    parser.add_argument(
+    '--guidance_scale',
+    type=float,
+    default=9.0,
+    help='guidance_scale'
     )
     args = parser.parse_args()
 
