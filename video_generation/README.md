@@ -13,6 +13,12 @@ pip install -r https://raw.githubusercontent.com/Picsart-AI-Research/Text2Video-
 pip install controlnet-aux
 ~~~
 
+### option (When use rembg to remove background)
+
+~~~
+pip install rembg[gpu]
+~~~
+
 ## How to use
 
 ~~~
