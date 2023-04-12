@@ -1,19 +1,25 @@
-from huggingface_hub import hf_hub_download
-
-filename = "__assets__/poses_skeleton_gifs/dance1_corr.mp4"
-repo_id = "PAIR/Text2Video-Zero"
-video_path = hf_hub_download(repo_type="space", repo_id=repo_id, filename=filename)
-
-import imageio
+import cv2
+import numpy as np
 from PIL import Image
-
-reader = imageio.get_reader(video_path, "ffmpeg")
-frame_count = 8
-pose_images = [Image.fromarray(reader.get_data(i)) for i in range(frame_count)]
-
 import torch
 from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
 from diffusers.pipelines.text_to_video_synthesis.pipeline_text_to_video_zero import CrossFrameAttnProcessor
+
+video_path = 'dance1_corr.mp4'
+
+## read video
+cap = cv2.VideoCapture(video_path)
+width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+fps = int(cap.get(cv2.CAP_PROP_FPS))
+
+pose_images = []
+while True:
+    ret, frame = cap.read()
+    if ret is False:
+        break
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    pose_images.append(Image.fromarray(frame))
 
 model_id = "model/stable-diffusion-v1-5"
 controlnet = ControlNetModel.from_pretrained("controlnet/sd-controlnet-openpose", torch_dtype=torch.float16)
@@ -25,17 +31,16 @@ pipe = StableDiffusionControlNetPipeline.from_pretrained(
 pipe.unet.set_attn_processor(CrossFrameAttnProcessor(batch_size=2))
 pipe.controlnet.set_attn_processor(CrossFrameAttnProcessor(batch_size=2))
 
-# fix latents for all frames
-#latents = torch.randn((1, 4, 64, 64), device="cuda", dtype=torch.float16).repeat(len(pose_images), 1, 1, 1)
-latents = torch.randn((1, 4, 64, 64), device="cuda", dtype=torch.float16)
-
-prompt = "Darth Vader dancing in a desert"
-
-chunk_size = 2
+chunk_size = 3
 frames = len(pose_images)
 seed = 20000
 
-import numpy as np
+# fix latents for all frames
+torch.manual_seed(seed)
+latents = torch.randn((1, 4,  height//8, width//8), device="cuda", dtype=torch.float16)
+
+prompt = "a beautiful girl dancing in a desert"
+
 chunk_ids = np.arange(0, frames, chunk_size - 1)
 result = []
 for i in range(len(chunk_ids)):
@@ -58,5 +63,11 @@ for i in range(len(chunk_ids)):
 
 result_array = np.concatenate(result)
 
-#result = pipe(prompt=[prompt] * len(pose_images), image=pose_images, latents=latents).images
-imageio.mimsave("video.mp4", result_array, fps=4)
+## make video
+fourcc = cv2.VideoWriter_fourcc('m','p','4','v')
+out = cv2.VideoWriter('video.mp4', fourcc, fps, (width, height))
+for frame in result_array:
+    frame = (frame * 255).astype(np.uint8)
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+    out.write(frame)
+out.release()
