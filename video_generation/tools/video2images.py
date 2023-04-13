@@ -16,8 +16,6 @@ parser.add_argument(
 )
 opt = parser.parse_args()
 
-os.makedirs('rembg_images', exist_ok=True)
-
 if opt.rembg:
     from rembg import remove, new_session
     save_folder = f'{opt.rembg}_images'
