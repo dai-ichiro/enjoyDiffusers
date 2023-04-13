@@ -21,5 +21,6 @@ pip install transformers accelerate safetensors opencv-python
 python video_pose.py \
   --video dance1_corr.mp4 \
   --chunk_size 3 \
+  --prompt prompt.txt \
   --seed 20000
 ~~~
