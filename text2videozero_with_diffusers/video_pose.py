@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 from PIL import Image
@@ -25,8 +26,8 @@ def main(args):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         pose_images.append(Image.fromarray(frame))
 
-    model_id = "runwayml/stable-diffusion-v1-5"
-    controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-openpose", torch_dtype=torch.float16)
+    model_id = "model/stable-diffusion-v1-5"
+    controlnet = ControlNetModel.from_pretrained("controlnet/sd-controlnet-openpose", torch_dtype=torch.float16)
     pipe = StableDiffusionControlNetPipeline.from_pretrained(
         model_id, controlnet=controlnet, torch_dtype=torch.float16
     ).to("cuda")
@@ -41,7 +42,19 @@ def main(args):
     torch.manual_seed(seed)
     latents = torch.randn((1, 4,  height//8, width//8), device="cuda", dtype=torch.float16)
 
-    prompt = "Darth Vader dancing in a desert"
+    if args.prompt is not None and os.path.isfile(args.prompt):
+        print(f'reading prompts from {args.prompt}')
+        with open(args.prompt, 'r') as f:
+            prompt_from_file = f.readlines()
+            prompt_from_file = [x.strip() for x in prompt_from_file if x.strip() != '']
+            prompt_from_file = ', '.join(prompt_from_file)
+            prompt = f'{prompt_from_file}, best quality, extremely detailed'
+    else:
+        prompt = 'best quality, extremely detailed'
+    
+    negative_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
+    print(f'prompt: {prompt}')
+    print(f'negative prompt: {negative_prompt}')
 
     chunk_ids = np.arange(0, frames, chunk_size - 1)
     result = []
@@ -54,6 +67,7 @@ def main(args):
         generator = torch.manual_seed(seed)
         inference_result = pipe(
             prompt = [prompt]*len(frame_ids),
+            negative_prompt = [negative_prompt]*len(frame_ids),
             image = ch_images,
             latents =latents.repeat(len(frame_ids), 1, 1, 1),
             generator = generator,
@@ -92,6 +106,11 @@ if __name__ == "__main__":
         default=20000,
         type=int,
         help='seed'
+    )
+    parser.add_argument(
+        '--prompt',
+        type=str,
+        help='prompt'
     )
     args = parser.parse_args()
 
