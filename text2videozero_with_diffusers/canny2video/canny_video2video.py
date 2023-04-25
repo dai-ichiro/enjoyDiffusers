@@ -7,7 +7,6 @@ from einops import rearrange
 
 from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, AutoencoderKL
 from diffusers.pipelines.text_to_video_synthesis.pipeline_text_to_video_zero import CrossFrameAttnProcessor
-
 from argparse import ArgumentParser
 
 def main(args):
@@ -19,24 +18,26 @@ def main(args):
     low_threshold= args.low_threshold
     high_threshold = args.high_threshold
     seed = args.seed
+    chunk_size = args.chunk_size
     num_inference_steps = args.steps
     controlnet_conditioning_scale = args.conditioning_scale
     guidance_scale = args.guidance_scale
     eta=0.0
 
     if vae_folder is not None:
-        vae = AutoencoderKL.from_pretrained('vae/anime2_vae', torch_dtype=torch.float16).to('cuda')
+        vae = AutoencoderKL.from_pretrained('vae/anime2_vae', torch_dtype=torch.float16)
     else:
-        vae = AutoencoderKL.from_pretrained(model_id, subfolder='vae', torch_dtype=torch.float16).to('cuda')
+        vae = AutoencoderKL.from_pretrained(model_id, subfolder='vae', torch_dtype=torch.float16)
     
-    controlnet = ControlNetModel.from_pretrained('controlnet/sd-controlnet-canny', torch_dtype=torch.float16).to('cuda')
+    controlnet = ControlNetModel.from_pretrained('controlnet/sd-controlnet-canny', torch_dtype=torch.float16)
+    
     
     pipe = StableDiffusionControlNetPipeline.from_pretrained(
         model_id,
         controlnet=controlnet,
         vae = vae, 
         safety_checker=None,
-        torch_dtype = torch.float16).to('cuda')
+        torch_dtype = torch.float16)
     
     # Set the attention processor
     pipe.unet.set_attn_processor(CrossFrameAttnProcessor(batch_size=2))
@@ -54,13 +55,16 @@ def main(args):
             pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
         case _:
             None
+    
+    pipe.enable_sequential_cpu_offload()
 
     ## read video
     vr = decord.VideoReader(video_path)
     fps = int(vr.get_avg_fps())
-    video = vr.get_batch(np.arange(len(vr))).asnumpy()
-
-    ## detect edge
+    frames = len(vr)
+    video = vr.get_batch(np.arange(frames)).asnumpy()
+    
+    ## detect edge (-> control: toch.Tensor)
     detected_maps = []
     for frame in video:
         detected_map = cv2.Canny(frame, low_threshold, high_threshold)
@@ -70,7 +74,7 @@ def main(args):
     control = torch.from_numpy(detected_maps.copy()).float() / 255.0
     control = rearrange(control, 'f h w c -> f c h w')
 
-    frames_count, h, w, _ = video.shape
+    _, h, w, _ = video.shape
     generator = torch.Generator('cuda').manual_seed(seed)
     latents = torch.randn((1, 4, h//8, w//8), dtype=torch.float16, device='cuda', generator=generator)
     
@@ -88,31 +92,29 @@ def main(args):
     print(f'prompt: {prompt}')
     print(f'negative prompt: {negative_prompt}')
 
+    chunk_ids = np.arange(0, frames, chunk_size - 1)
     result = []
-    latents = latents.repeat(2, 1, 1, 1)
-    prompt = [prompt] * 2
-    negative_prompt = [negative_prompt] *2
-    for i in range(frames_count):
-        print(f'{i+1}/{frames_count}')
-        frame_ids = [0] + [i]
-        
-        image = control[frame_ids]
-        
-        generator = torch.Generator('cuda').manual_seed(seed)
-        result.append(
-            pipe(
-                image = image,
-                prompt = prompt,
-                height=h,
-                width=w,
-                num_inference_steps=num_inference_steps,
-                guidance_scale=guidance_scale,
-                controlnet_conditioning_scale=controlnet_conditioning_scale,
-                eta=eta,
-                negative_prompt = negative_prompt,
-                latents = latents,
-                generator = generator,
-                output_type='numpy').images[1:])
+    for i in range(len(chunk_ids)):
+        ch_start = chunk_ids[i]
+        ch_end = ch_end = frames if i == len(chunk_ids) - 1 else chunk_ids[i + 1]
+        frame_ids = [0] + list(range(ch_start, ch_end))
+        ch_images = control[frame_ids]
+        print(f'Processing chunk {i + 1} / {len(chunk_ids)}')
+        generator = torch.manual_seed(seed)
+        inference_result = pipe(
+            prompt = [prompt]*len(frame_ids),
+            negative_prompt = [negative_prompt]*len(frame_ids),
+            image = ch_images,
+            latents =latents.repeat(len(frame_ids), 1, 1, 1),
+            generator = generator,
+            output_type = 'numpy',
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
+            eta=eta,
+            controlnet_conditioning_scale=controlnet_conditioning_scale,
+        ).images[1:]
+
+        result.append(inference_result)
 
     result = np.concatenate(result)
     
@@ -196,6 +198,12 @@ if __name__ == "__main__":
         type=float,
         default=9.0,
         help='guidance_scale'
+    )
+    parser.add_argument(
+        '--chunk_size',
+        default=2,
+        type=int,
+        help='chunk_size'
     )
     args = parser.parse_args()
 
