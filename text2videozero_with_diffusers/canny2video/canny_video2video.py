@@ -22,14 +22,15 @@ def main(args):
     num_inference_steps = args.steps
     controlnet_conditioning_scale = args.conditioning_scale
     guidance_scale = args.guidance_scale
-    eta=0.0
+    eta=0.0,
+    cpu_offload = args.cpu_offload
 
     if vae_folder is not None:
         vae = AutoencoderKL.from_pretrained('vae/anime2_vae', torch_dtype=torch.float16)
     else:
         vae = AutoencoderKL.from_pretrained(model_id, subfolder='vae', torch_dtype=torch.float16)
     
-    controlnet = ControlNetModel.from_pretrained('controlnet/sd-controlnet-canny', torch_dtype=torch.float16)
+    controlnet = ControlNetModel.from_pretrained('controlnet/control_v11p_sd15_canny', torch_dtype=torch.float16)
     
     
     pipe = StableDiffusionControlNetPipeline.from_pretrained(
@@ -56,7 +57,10 @@ def main(args):
         case _:
             None
     
-    pipe.enable_sequential_cpu_offload()
+    if cpu_offload:
+        pipe.enable_sequential_cpu_offload()
+    else:
+        pipe.to('cuda')
 
     ## read video
     vr = decord.VideoReader(video_path)
@@ -204,6 +208,11 @@ if __name__ == "__main__":
         default=2,
         type=int,
         help='chunk_size'
+    )
+    parser.add_argument(
+        '--cpu_offload',
+        action='store_true',
+        help='cpu_offload'
     )
     args = parser.parse_args()
 
