@@ -3,12 +3,23 @@ import numpy as np
 import torch
 import cv2
 import decord
+import time
 from einops import rearrange
 
 from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, AutoencoderKL
 from diffusers.pipelines.text_to_video_synthesis.pipeline_text_to_video_zero import CrossFrameAttnProcessor
 from argparse import ArgumentParser
 
+def measure_time(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {end - start} seconds")
+        return result
+    return wrapper
+
+@measure_time
 def main(args):
     video_path = args.video
     save_path = args.save_path
@@ -54,6 +65,9 @@ def main(args):
         case 'eulera':
             from diffusers import EulerAncestralDiscreteScheduler
             pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
+        case 'UniPC':
+            from diffusers import UniPCMultistepScheduler
+            pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
         case _:
             None
     
@@ -159,8 +173,8 @@ if __name__ == "__main__":
     parser.add_argument(
         '--scheduler',
         type=str,
-        default='pndm',
-        choices=['pndm', 'multistepdpm', 'eulera']
+        default='UniPC',
+        choices=['pndm', 'multistepdpm', 'eulera', 'UniPC']
     )
     parser.add_argument(
         '--low_threshold',
