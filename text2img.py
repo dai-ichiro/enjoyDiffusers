@@ -20,7 +20,7 @@ def main(args):
     else:
         prompt = '1girl, best quality, extremely detailed'
 
-    if os.path.isfile(args.prompt):
+    if os.path.isfile(args.negative_prompt):
         print(f'reading negative prompts from {args.negative_prompt}')
         with open(args.negative_prompt, 'r') as f:
             negative_prompt = f.readlines()
@@ -122,4 +122,12 @@ if __name__ == "__main__":
     opt = parser.parse_args()
 
     main(opt)
+
+'''
+python text2img.py ^
+  --model model/Counterfeit-V2.0 ^
+  --prompt prompt.txt ^
+  --scheduler eulera ^
+  --n_samples 10 
+'''
 
