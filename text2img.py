@@ -1,7 +1,7 @@
 import os
 import argparse
 import torch
-from diffusers import DiffusionPipeline
+from diffusers import DiffusionPipeline, AutoencoderKL
 
 def main(args):
 
@@ -10,6 +10,9 @@ def main(args):
     scale_list = args.scale
     steps = args.steps
     seed = args.seed
+    vae_folder = args.vae
+    width = args.width
+    height = args.height
 
     if os.path.isfile(args.prompt):
         print(f'reading prompts from {args.prompt}')
@@ -29,9 +32,17 @@ def main(args):
     else:
         negative_prompt = None
 
+    if vae_folder is not None:
+        vae = AutoencoderKL.from_pretrained(vae_folder, torch_dtype=torch.float16).to('cuda')
+        vae_name = vae_folder.split("/")[-1]
+    else:
+        vae = AutoencoderKL.from_pretrained(model_id, subfolder='vae', torch_dtype=torch.float16).to('cuda')
+        vae_name = "none"
+
     pipe = DiffusionPipeline.from_pretrained(
         model_id, 
         safety_checker=None,
+        vae=vae,
         torch_dtype=torch.float16)
     
     scheduler = opt.scheduler
@@ -54,7 +65,7 @@ def main(args):
     
     scale_list = opt.scale
     steps = opt.steps
-
+    
     for i in range(opt.n_samples):
         for scale in scale_list:
             seed  = opt.seed + i
@@ -65,8 +76,10 @@ def main(args):
                 generator = generator,
                 guidance_scale = scale,
                 num_inference_steps = steps,
-                num_images_per_prompt = 1).images[0]
-            image.save(os.path.join('results', f'{scheduler}_seed{seed}_scale{scale}_steps{steps}.png'))
+                num_images_per_prompt = 1,
+                width = width,
+                height = height).images[0]
+            image.save(os.path.join('results', f'{scheduler}_vae{vae_name}_seed{seed}_scale{scale}_steps{steps}.png'))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -119,6 +132,24 @@ if __name__ == "__main__":
         default='pndm',
         choices=['pndm', 'multistepdpm', 'eulera']
     )
+    parser.add_argument(
+        '--vae',
+        type=str,
+        help='vae'
+    )
+    parser.add_argument(
+        '--width',
+        type=int,
+        default=512,
+        help='width'
+    )
+    parser.add_argument(
+        '--height',
+        type=int,
+        default=512,
+        help='height'
+    )
+
     opt = parser.parse_args()
 
     main(opt)
@@ -126,8 +157,10 @@ if __name__ == "__main__":
 '''
 python text2img.py ^
   --model model/Counterfeit-V2.0 ^
-  --prompt prompt.txt ^
+  --vae vae/anime2_vae ^
   --scheduler eulera ^
+  --prompt prompt.txt ^
+  --width 768 --height 512 ^
   --n_samples 10 
 '''
 
