@@ -110,7 +110,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--prompt',
         type=str,
-        help='prompt'
+        help='path to prompt file'
     )
     args = parser.parse_args()
 
