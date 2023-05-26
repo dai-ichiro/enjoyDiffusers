@@ -71,7 +71,7 @@ def main(args):
             image = ch_images,
             latents =latents.repeat(len(frame_ids), 1, 1, 1),
             generator = generator,
-            output_type = 'numpy'
+            output_type = 'np'
         ).images[1:]
 
         result.append(inference_result)
