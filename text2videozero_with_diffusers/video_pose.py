@@ -60,7 +60,7 @@ def main(args):
     result = []
     for i in range(len(chunk_ids)):
         ch_start = chunk_ids[i]
-        ch_end = ch_end = frames if i == len(chunk_ids) - 1 else chunk_ids[i + 1]
+        ch_end = frames if i == len(chunk_ids) - 1 else chunk_ids[i + 1]
         frame_ids = [0] + list(range(ch_start, ch_end))
         ch_images = [pose_images[0]] + pose_images[ch_start:ch_end]
         print(f'Processing chunk {i + 1} / {len(chunk_ids)}')
