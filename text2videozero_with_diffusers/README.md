@@ -17,6 +17,7 @@ pip install transformers accelerate safetensors opencv-python
 
 ## How to use
 
+「dance1_corr.mp4」was downloaded from [here](https://huggingface.co/spaces/PAIR/Text2Video-Zero/blob/main/__assets__/poses_skeleton_gifs/dance1_corr.mp4).
 ~~~
 python video_pose.py \
   --video dance1_corr.mp4 \
