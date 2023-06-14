@@ -27,6 +27,8 @@ def main(args):
         pose_images.append(Image.fromarray(frame))
 
     model_id = "model/stable-diffusion-v1-5"
+    lllyasviel/control_v11p_sd15_openpose
+    #controlnet = ControlNetModel.from_pretrained("lllyasviel/control_v11p_sd15_openpose", torch_dtype=torch.float16)
     controlnet = ControlNetModel.from_pretrained("controlnet/sd-controlnet-openpose", torch_dtype=torch.float16)
     pipe = StableDiffusionControlNetPipeline.from_pretrained(
         model_id, controlnet=controlnet, torch_dtype=torch.float16
