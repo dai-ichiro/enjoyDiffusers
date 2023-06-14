@@ -41,6 +41,7 @@ def main(args):
     else:
         vae = AutoencoderKL.from_pretrained(model_id, subfolder='vae', torch_dtype=torch.float16)
     
+    #controlnet = ControlNetModel.from_pretrained('lllyasviel/control_v11p_sd15_canny', torch_dtype=torch.float16)
     controlnet = ControlNetModel.from_pretrained('controlnet/control_v11p_sd15_canny', torch_dtype=torch.float16)
     
     
