@@ -16,14 +16,17 @@ parser.add_argument(
 )
 opt = parser.parse_args()
 
+video_path = opt.video
+video_fname = os.path.splitext(os.path.basename(video_path))[0]
+
 if opt.rembg:
     from rembg import remove, new_session
-    save_folder = f'{opt.rembg}_images'
+    save_folder = f'{opt.rembg}_{video_fname}'
 else:
-    save_folder = 'images'
+    save_folder = video_fname
 os.makedirs(save_folder, exist_ok=True)
 
-cap = cv2.VideoCapture(opt.video)
+cap = cv2.VideoCapture(video_path)
 
 frame_no = 0
 while True:
