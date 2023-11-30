@@ -11,5 +11,5 @@ Python 3.11
 ~~~
 pip install torch==2.1.1+cu118 torchvision==0.16.1+cu118 --index-url https://download.pytorch.org/whl/cu118
 pip install diffusers[torch]
-pip install transformers opencv-python decord
+pip install transformers opencv-python decord imageio
 ~~~
