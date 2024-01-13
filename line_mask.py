@@ -49,7 +49,7 @@ def draw_circle(event,x,y, flags, param):
 original_image = cv2.imread(img_path)
 mask_image = np.zeros(original_image.shape[0:2])
 
-width, height = original_image.shape[0:2]
+height, width = original_image.shape[0:2]
 position_x = 100
 position_y = 100
 
