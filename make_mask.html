@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画像マスク生成アプリ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+        }
+        #mainCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: crosshair;
+        }
+        #drawingCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: crosshair;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-xl">
+        <h1 class="text-4xl font-bold text-center text-gray-800 mb-2">画像マスク生成アプリ</h1>
+        <p class="text-center text-gray-600 mb-6">画像をアップロードし、ブラシツールでマスクしたい部分を描画してください。</p>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            <div class="lg:w-1/2">
+                <label for="imageUpload" class="block text-sm font-medium text-gray-700 mb-2">画像をアップロード</label>
+                <div class="flex items-center justify-center w-full">
+                    <label for="imageUpload" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200 ease-in-out">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                            <svg class="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.12 5.078 5.043 5.143 5 5.215v6.526M9 13h4M8 6h.01M16 13h-4m2 2v-4m0 0a2 2 0 0 0-2-2h-2m2 2v-4m0 0a2 2 0 0 0 2-2h2"/>
+                            </svg>
+                            <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">クリックしてアップロード</span> またはドラッグ&ドロップ</p>
+                            <p class="text-xs text-gray-500">SVG, PNG, JPG, JPEG, GIF (最大 800x600px)</p>
+                        </div>
+                        <input id="imageUpload" type="file" class="hidden" accept="image/*" />
+                    </label>
+                </div>
+                <div class="canvas-container mt-4">
+                    <canvas id="mainCanvas"></canvas>
+                    <canvas id="drawingCanvas"></canvas>
+                </div>
+            </div>
+
+            <div class="lg:w-1/2">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-lg font-semibold text-gray-800">ツール</span>
+                    <div class="flex gap-2">
+                        <button id="brushTool" class="p-2 rounded-lg bg-indigo-600 text-white shadow-md hover:bg-indigo-700 transition-colors duration-200 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                                <path d="M2 13.5V18a2 2 0 002 2h4.5a2 2 0 002-2v-4.5a2 2 0 00-2-2H4a2 2 0 00-2 2z" />
+                            </svg>
+                        </button>
+                        <button id="eraseTool" class="p-2 rounded-lg bg-gray-300 text-gray-800 shadow-md hover:bg-gray-400 transition-colors duration-200 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M12.723 11.277L14 10l-1.277-1.277A2 2 0 0113 7h2a2 2 0 002-2V3a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 01-2 2H7a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 012 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2a2 2 0 01-2-2V13a2 2 0 00-2-2H7a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 012 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2a2 2 0 01-2-2z" />
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="brushSize" class="block text-sm font-medium text-gray-700">ブラシサイズ</label>
+                    <input type="range" id="brushSize" min="1" max="50" value="10" class="w-full mt-1 accent-indigo-600">
+                </div>
+
+                <div class="mb-4">
+                    <label for="brushColor" class="block text-sm font-medium text-gray-700">ブラシカラー</label>
+                    <input type="color" id="brushColor" value="#ff0000" class="w-full mt-1 h-10 rounded-md">
+                </div>
+                
+                <button id="generateMaskBtn" class="w-full py-3 px-4 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200 ease-in-out">
+                    マスク画像を生成
+                </button>
+
+                <div class="mt-6">
+                    <label class="block text-lg font-semibold text-gray-800 mb-2">生成されたマスク</label>
+                    <div class="border-2 border-gray-300 rounded-lg p-2 flex items-center justify-center h-96">
+                        <canvas id="outputCanvas" class="max-w-full max-h-full"></canvas>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <label for="statusText" class="block text-sm font-medium text-gray-700">ステータス</label>
+                    <textarea id="statusText" class="w-full p-2 mt-1 border border-gray-300 rounded-lg bg-gray-50 text-gray-700" rows="2" readonly>画像をアップロードしてください。</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const imageUpload = document.getElementById('imageUpload');
+            const mainCanvas = document.getElementById('mainCanvas');
+            const drawingCanvas = document.getElementById('drawingCanvas');
+            const outputCanvas = document.getElementById('outputCanvas');
+            const generateMaskBtn = document.getElementById('generateMaskBtn');
+            const statusText = document.getElementById('statusText');
+            const brushSizeInput = document.getElementById('brushSize');
+            const brushColorInput = document.getElementById('brushColor');
+            const brushToolBtn = document.getElementById('brushTool');
+            const eraseToolBtn = document.getElementById('eraseTool');
+
+            let originalImage = new Image();
+            let isDrawing = false;
+            let currentTool = 'brush';
+            let brushSize = 10;
+            let brushColor = '#ff0000';
+
+            const mainCtx = mainCanvas.getContext('2d', { willReadFrequently: true });
+            const drawingCtx = drawingCanvas.getContext('2d', { willReadFrequently: true });
+            const outputCtx = outputCanvas.getContext('2d');
+
+            function resizeCanvases(width, height) {
+                mainCanvas.width = width;
+                mainCanvas.height = height;
+                drawingCanvas.width = width;
+                drawingCanvas.height = height;
+                outputCanvas.width = width;
+                outputCanvas.height = height;
+            }
+
+            imageUpload.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    originalImage.onload = () => {
+                        const aspectRatio = originalImage.width / originalImage.height;
+                        const containerWidth = mainCanvas.parentElement.clientWidth;
+                        const newWidth = containerWidth;
+                        const newHeight = containerWidth / aspectRatio;
+
+                        resizeCanvases(newWidth, newHeight);
+
+                        mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+                        mainCtx.drawImage(originalImage, 0, 0, mainCanvas.width, mainCanvas.height);
+                        
+                        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                        outputCtx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+
+                        statusText.value = '画像をアップロードしました。ブラシでマスクを描画してください。';
+                    };
+                    originalImage.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            drawingCanvas.addEventListener('mousedown', (e) => {
+                isDrawing = true;
+                const rect = drawingCanvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                drawingCtx.beginPath();
+                drawingCtx.moveTo(x, y);
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDrawing) return;
+                const rect = drawingCanvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                drawingCtx.lineWidth = brushSize;
+                drawingCtx.lineCap = 'round';
+
+                if (currentTool === 'brush') {
+                    drawingCtx.strokeStyle = brushColor;
+                } else if (currentTool === 'erase') {
+                    drawingCtx.strokeStyle = 'rgba(0, 0, 0, 1)';
+                    drawingCtx.globalCompositeOperation = 'destination-out';
+                }
+                
+                drawingCtx.lineTo(x, y);
+                drawingCtx.stroke();
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDrawing) {
+                    isDrawing = false;
+                    drawingCtx.closePath();
+                    drawingCtx.globalCompositeOperation = 'source-over';
+                }
+            });
+
+            brushSizeInput.addEventListener('input', (e) => {
+                brushSize = e.target.value;
+            });
+            
+            brushColorInput.addEventListener('input', (e) => {
+                brushColor = e.target.value;
+            });
+
+            brushToolBtn.addEventListener('click', () => {
+                currentTool = 'brush';
+                brushToolBtn.classList.remove('bg-gray-300', 'text-gray-800');
+                brushToolBtn.classList.add('bg-indigo-600', 'text-white');
+                eraseToolBtn.classList.remove('bg-indigo-600', 'text-white');
+                eraseToolBtn.classList.add('bg-gray-300', 'text-gray-800');
+            });
+            
+            eraseToolBtn.addEventListener('click', () => {
+                currentTool = 'erase';
+                eraseToolBtn.classList.remove('bg-gray-300', 'text-gray-800');
+                eraseToolBtn.classList.add('bg-indigo-600', 'text-white');
+                brushToolBtn.classList.remove('bg-indigo-600', 'text-white');
+                brushToolBtn.classList.add('bg-gray-300', 'text-gray-800');
+            });
+
+            generateMaskBtn.addEventListener('click', () => {
+                if (!originalImage.src) {
+                    statusText.value = '画像をアップロードしてください。';
+                    return;
+                }
+
+                // drawingCanvasの内容を白黒のマスクとして取得
+                const maskData = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
+                const maskImage = new Image();
+                maskImage.onload = () => {
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = mainCanvas.width;
+                    tempCanvas.height = mainCanvas.height;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCtx.drawImage(maskImage, 0, 0, tempCanvas.width, tempCanvas.height);
+                    
+                    const finalMaskData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                    const outputImageData = new ImageData(new Uint8ClampedArray(finalMaskData.data.length), finalMaskData.width, finalMaskData.height);
+                    
+                    for (let i = 0; i < finalMaskData.data.length; i += 4) {
+                        const alpha = finalMaskData.data[i + 3];
+                        // 透明な部分は黒（0）、描画された部分は白（255）
+                        outputImageData.data[i] = outputImageData.data[i + 1] = outputImageData.data[i + 2] = alpha > 0 ? 255 : 0;
+                        outputImageData.data[i + 3] = 255;
+                    }
+
+                    outputCtx.putImageData(outputImageData, 0, 0);
+                    statusText.value = 'マスク画像が正常に生成されました。';
+                };
+                maskImage.src = drawingCanvas.toDataURL();
+            });
+        });
+    </script>
+</body>
+</html>
