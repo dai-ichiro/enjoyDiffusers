@@ -19,16 +19,15 @@ cd qwen
 
 ### 2. Node.js がない場合（Git Sparse Checkout を使用）
 
-Git の Sparse Checkout 機能を使用して、`qwen` フォルダにクローンし、特定フォルダのみをダウンロードします。
-`--no-cone` オプションを指定することで、リポジトリ直下の不要なファイルを除外し、`Qwen-Image-2.1` フォルダのみを取得できます。
-
-※ Git の仕様上、リポジトリ内のディレクトリ構造（`Qwen-Image-2.1` フォルダ）が維持されるため、クローン後に `cd Qwen-Image-2.1` で移動します（`degit` の場合はフォルダの中身が直下の `qwen` に展開されます）。
+Git の Sparse Checkout 機能を使用して `qwen` フォルダにクローンし、`Qwen-Image-2.1` フォルダのみをダウンロードします。
+クローン後に中身を `qwen` フォルダ直下に移動することで、`npx degit` を使用した場合と同じフォルダ構造（`qwen/*`）にできます。
 
 ```bash
 git clone --filter=blob:none --sparse https://github.com/dai-ichiro/enjoyDiffusers.git qwen
 cd qwen
 git sparse-checkout set --no-cone Qwen-Image-2.1
-cd Qwen-Image-2.1
+mv Qwen-Image-2.1/* . 2>/dev/null; mv Qwen-Image-2.1/.* . 2>/dev/null
+rmdir Qwen-Image-2.1
 ```
 
 ---
