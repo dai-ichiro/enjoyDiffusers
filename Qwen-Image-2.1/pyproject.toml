@@ -1,0 +1,40 @@
+[project]
+name = "qwen"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13, <3.14"
+dependencies = [
+    "accelerate==1.15.0",
+    "bitsandbytes==0.50.2",
+    "causal-conv1d==1.7.0",
+    "diffusers @ git+https://github.com/huggingface/diffusers",
+    "flash-linear-attention==0.5.2",
+    "gradio==6.28.0",
+    "hf-xet==1.6.0",
+    "openvino==2026.4.0",
+    "sdnq==0.2.6",
+    "torch==2.14.0+cu132",
+    "torchvision==0.29.0+cu132",
+    "transformers==5.17.0",
+    "triton==3.8.0",
+]
+
+[[tool.uv.index]]
+name = "torch-cuda"
+url = "https://download.pytorch.org/whl/cu132"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "torch-cuda" }]
+torchvision = [{ index = "torch-cuda" }]
+
+# causal-conv1d / flash-linear-attention はビルド時に torch を import するが、
+# 自身のビルド依存には torch を宣言していないため、isolated build 環境にも
+# ランタイムと同じ torch を注入する。
+[tool.uv.extra-build-dependencies]
+causal-conv1d = [{ requirement = "torch", match-runtime = true }]
+flash-linear-attention = [{ requirement = "torch", match-runtime = true }]
+
+[tool.uv.extra-build-variables]
+causal-conv1d = { TORCH_CUDA_ARCH_LIST = "8.6" }
