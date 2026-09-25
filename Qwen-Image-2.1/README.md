@@ -19,11 +19,11 @@ cd qwen
 
 ### 2. Node.js がない場合（Git Sparse Checkout を使用）
 
-Git の Sparse Checkout 機能を使用して、特定フォルダのみをダウンロードします。
+Git の Sparse Checkout 機能を使用して、`qwen` フォルダにクローンし、特定フォルダのみをダウンロードします。
 
 ```bash
-git clone --filter=blob:none --sparse https://github.com/dai-ichiro/enjoyDiffusers.git
-cd enjoyDiffusers
+git clone --filter=blob:none --sparse https://github.com/dai-ichiro/enjoyDiffusers.git qwen
+cd qwen
 git sparse-checkout set Qwen-Image-2.1
 cd Qwen-Image-2.1
 ```
@@ -39,6 +39,9 @@ uv sync
 ```
 
 ※ Python `>=3.13, <3.14` および CUDA 対応の PyTorch 環境が必要です。
+
+> **⚠️ 注意事項（`pyproject.toml` の設定）**
+> `pyproject.toml` の最終行にある `TORCH_CUDA_ARCH_LIST`（デフォルト表記例: `8.6`）は、ビルド時に使用する GPU の Compute Capability（アーキテクチャ）に合わせて各自変更が必要です。（例: RTX 3090/3080等なら `8.6`、RTX 4090/4080等なら `8.9` など）
 
 ---
 
