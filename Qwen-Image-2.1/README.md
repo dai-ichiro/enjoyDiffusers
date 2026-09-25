@@ -38,7 +38,7 @@ cd Qwen-Image-2.1
 uv sync
 ```
 
-※ Python `>=3.13, <3.14` および CUDA 対応の PyTorch 環境が必要です。
+※ Python `>=3.13, <3.14` および CUDA 13.2（PyTorch 2.14.0+cu132）の環境が必要です（本プロジェクトの実行環境は CUDA 13.2 に限定しています）。
 
 > **⚠️ 注意事項（`pyproject.toml` の設定）**
 > `pyproject.toml` の最終行にある `TORCH_CUDA_ARCH_LIST`（デフォルト表記例: `8.6`）は、ビルド時に使用する GPU の Compute Capability（アーキテクチャ）に合わせて各自変更が必要です。（例: RTX 3090/3080等なら `8.6`、RTX 4090/4080等なら `8.9` など）
