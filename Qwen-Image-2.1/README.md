@@ -22,6 +22,8 @@ cd qwen
 Git の Sparse Checkout 機能を使用して、`qwen` フォルダにクローンし、特定フォルダのみをダウンロードします。
 `--no-cone` オプションを指定することで、リポジトリ直下の不要なファイルを除外し、`Qwen-Image-2.1` フォルダのみを取得できます。
 
+※ Git の仕様上、リポジトリ内のディレクトリ構造（`Qwen-Image-2.1` フォルダ）が維持されるため、クローン後に `cd Qwen-Image-2.1` で移動します（`degit` の場合はフォルダの中身が直下の `qwen` に展開されます）。
+
 ```bash
 git clone --filter=blob:none --sparse https://github.com/dai-ichiro/enjoyDiffusers.git qwen
 cd qwen
