@@ -42,7 +42,7 @@ DTYPE = torch.bfloat16
 STEPS = 6
 SIGMAS = [1.0, 0.9375, 0.875, 0.75, 0.5, 0.25]
 
-MAX_INPUT_IMAGES = 10
+MAX_INPUT_IMAGES = 3
 
 
 # ============== Logging class ==============
@@ -131,7 +131,7 @@ class GenerationLogger:
 
 def validate_image_count(images):
     if images is not None and len(images) > MAX_INPUT_IMAGES:
-        raise gr.Error("Up to 10 input images are supported.")
+        raise gr.Error("Up to 3 input images are supported.")
 
 
 # ============== Local model loading ==============
@@ -524,7 +524,7 @@ with gr.Blocks(title="Qwen Image 2.1 Viggle Turbo Demo") as demo:
         gr.Markdown("<h1 style='text-align: center;'>Qwen-Image 2.1 Viggle Turbo</h1>")
         instructions = gr.Markdown("""
 ## Qwen Image 2.1 Viggle Turbo Demo
-1. Generate from text without an input image, or upload 1–10 images to edit or combine them. Refer to images by their upload order in your prompt.
+1. Generate from text without an input image, or upload 1–3 images to edit or combine them. Refer to images by their upload order in your prompt.
 2. Viggle Turbo LoRA is applied automatically for high-speed generation (6 steps).
 3. Prompt enhancement is enabled by default. Turn it off to use your original prompt directly.
 4. Image size is decided by user selection below ("small" or "large").
@@ -626,10 +626,10 @@ with gr.Blocks(title="Qwen Image 2.1 Viggle Turbo Demo") as demo:
                     button.click(fn=make_example_loader([], text, True), inputs=[],
                                  outputs=[input_images, prompt, enable_extend], queue=False)
 
-    input_images.label = "Input images (editing, up to 10)"
+    input_images.label = "Input images (editing, up to 3)"
     result.label = "Result"
     prompt.label = "Prompt"
-    prompt.placeholder = "Describe what to generate or edit; refer to images 1–10 in upload order…"
+    prompt.placeholder = "Describe what to generate or edit; refer to images 1–3 in upload order…"
     enable_extend.label = "Enhance prompt"
     generate_button.value = "Generate image"
     advanced.label = "Advanced settings"
