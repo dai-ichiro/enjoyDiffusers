@@ -807,4 +807,6 @@ if __name__ == "__main__":
     demo.launch(
         allowed_paths=_allowed,
         css=css,
+        share=False,
+        inbrowser=True
     )
