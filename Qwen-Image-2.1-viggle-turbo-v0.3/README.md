@@ -13,7 +13,7 @@ Gradio を使用して **Qwen-Image-2.1** に Viggle Turbo LoRA アダプター�
 `npx degit` を利用することで、`Qwen-Image-2.1-viggle-turbo-v0.3` フォルダのみを高速に取得できます。
 
 ```bash
-npx degit dai-ichiro/enjoyDiffusers/Qwen-Image-2.1-viggle-turbo qwen-viggle
+npx degit dai-ichiro/enjoyDiffusers/Qwen-Image-2.1-viggle-turbo-v0.3 qwen-viggle
 cd qwen-viggle
 ```
 
