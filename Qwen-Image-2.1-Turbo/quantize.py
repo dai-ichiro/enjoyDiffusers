@@ -3,7 +3,6 @@ from diffusers import SDNQConfig
 from transformers import Qwen3VLForConditionalGeneration
 from diffusers import QwenImage21Transformer2DModel
 
-'''
 ## text_encoder (8bit)
 text_encoder=Qwen3VLForConditionalGeneration.from_pretrained(
     "models/Qwen-Image-2.1-Turbo",
@@ -27,8 +26,6 @@ text_encoder=Qwen3VLForConditionalGeneration.from_pretrained(
 SAVE_DIR = "Qwen-Image-2.1-Turbo-sdnq-4bit"
 
 text_encoder.save_pretrained(f"models/{SAVE_DIR}/text_encoder")
-
-'''
 
 ## transformer (8bit)
 text_encoder=QwenImage21Transformer2DModel.from_pretrained(
