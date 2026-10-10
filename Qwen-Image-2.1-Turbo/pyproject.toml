@@ -6,17 +6,16 @@ readme = "README.md"
 requires-python = ">=3.13, <3.14"
 dependencies = [
     "accelerate==1.15.0",
-    "bitsandbytes==0.50.2",
     "causal-conv1d==1.7.0",
-    "diffusers @ git+https://github.com/huggingface/diffusers",
+    "diffusers==0.41.0",
     "flash-linear-attention==0.5.2",
-    "gradio==6.28.0",
-    "hf-xet==1.6.0",
-    "openvino==2026.4.0",
-    "sdnq==0.2.6",
+    "gradio==6.30.0",
+    "hf-xet==1.7.0",
+    "openvino==2026.4.1",
+    "sdnq==0.2.7",
     "torch==2.14.0+cu132",
     "torchvision==0.29.0+cu132",
-    "transformers==5.17.0",
+    "transformers==5.19.0",
     "triton==3.8.0",
 ]
 
