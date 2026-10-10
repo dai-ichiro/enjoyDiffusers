@@ -84,12 +84,6 @@ models/
 モデルの準備ができたら、以下のコマンドで Gradio アプリを起動します。
 
 ```bash
-python app.py
-```
-
-`uv` をお使いの場合:
-
-```bash
 uv run app.py
 ```
 
