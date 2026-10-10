@@ -3,7 +3,7 @@ import torch
 
 # dowonload Qwen/Qwen-Image-2.1-Turbo
 snapshot_download(
-    repo_id=" Qwen/Qwen-Image-2.1-Turbo",
+    repo_id="Qwen/Qwen-Image-2.1-Turbo",
     local_dir="./models/Qwen-Image-2.1-Turbo",
 )
 
