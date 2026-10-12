@@ -102,7 +102,7 @@ uv run app.py
    - 画像サイズ（アスペクト比）も拡張モデルの出力結果に基づいて自動選択されます。
 
 3. **量子化 (Quantization) 選択**
-   - 詳細設定 (Advanced Settings) から `normal (no quantization)`、`bnb-4bit`、`sdnq-4bit`、`sdnq-8bit` などの量子化バリアントを切替可能です。
+   - 詳細設定 (Advanced Settings) から `normal (no quantization)`、`sdnq-4bit`、`sdnq-8bit` などの量子化バリアントを切替可能です。
 
 4. **透過画像 (RGBA) 生成**
    - アルファチャンネルを含む透過画像の生成に対応しています。プロンプトに以下のような指示を含めてください：
