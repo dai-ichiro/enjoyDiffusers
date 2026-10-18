@@ -527,7 +527,13 @@ with gr.Blocks(title="FLUX.3 Klein") as demo:
 demo.queue(default_concurrency_limit=1, max_size=20)
 
 if __name__ == "__main__":
+
+    print("\n[Notice] ブラウザからは http://localhost:7860 で開いてください。\n")
+    
     demo.launch(
         css=css,
-        share=False
+        server_name="0.0.0.0",
+        share=False,
+        quiet=True
     )
+
