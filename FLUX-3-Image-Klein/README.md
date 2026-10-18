@@ -49,17 +49,6 @@ uv sync
 
 ---
 
-### モデルのダウンロード
-
-アプリの実行に必要なモデルファイルを `./models/` フォルダ内に配置します。
-付属の `download.py` や Hugging Face CLI / `huggingface_hub` を使用してダウンロードしてください。
-
-`download.py` を実行してオリジナルモデルとプロンプト拡張用モデルが取得できます：
-
-```bash
-uv run download.py
-```
-
 ### prompt upsamplerの量子化
 
 ```bash
