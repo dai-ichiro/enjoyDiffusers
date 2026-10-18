@@ -3,7 +3,7 @@ name = "klein"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.13, <3.14"
 dependencies = [
     "accelerate==1.15.0",
     "bitsandbytes==0.50.2",
