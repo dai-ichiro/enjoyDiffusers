@@ -1,1 +1,1 @@
-uv run /home/ubuntu/app.py
+uv run /home/ubuntu/klein/app.py
