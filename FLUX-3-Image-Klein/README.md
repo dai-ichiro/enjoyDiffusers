@@ -67,8 +67,6 @@ uv run upsampler-quantize.py
 uv run app.py
 ```
 
-起動後、ターミナルに表示される URL（通常は `http://127.0.0.1:7860`）へブラウザでアクセスしてください。
-
 ---
 
 ## ✨ 主な機能と使い方
