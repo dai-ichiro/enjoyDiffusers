@@ -51,6 +51,8 @@ uv sync
 
 ### prompt upsamplerの量子化
 
+bitsandbytesを使って4bitに量子化します。
+
 ```bash
 uv run upsampler-quantize.py
 ```
